@@ -1,0 +1,20 @@
+name: Minha Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar projeto
+        uses: actions/checkout@v4
+
+      - name: Mostrar arquivos
+        run: ls
+
+      - name: Mensagem
+        run: echo "Pipeline funcionando!"
