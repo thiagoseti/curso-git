@@ -30,12 +30,14 @@ jobs:
             exit 1
           fi
 
+      # Aqui você cria a pasta build e joga o index.html nela
       - name: Simular Build
         run: |
           mkdir build
           cp index.html build/
           echo "Build criada com sucesso"
 
+      # Upload do artefato padrão do workflow
       - name: Upload da Build
         uses: actions/upload-artifact@v4
         with:
@@ -57,19 +59,20 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
-      - name: Baixar projeto
-        uses: actions/checkout@v4
+      # Em vez de clonar o git de novo, baixamos o artefato gerado no job anterior
+      - name: Baixar Artefato da Build
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: ./dist # Baixa o conteúdo direto para uma pasta chamada 'dist'
 
-      - name: Criar pasta deploy
-        run: |
-          mkdir deploy
-          cp index.html deploy/
-
+      # O upload-pages-artifact prepara o pacote específico para o GitHub Pages
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: deploy/
+          path: ./dist # Aponta para a pasta onde extraímos o artefato válido
 
+      # Faz o deploy oficial
       - name: Deploy Pages
         id: deploy
         uses: actions/deploy-pages@v4
