@@ -1,4 +1,4 @@
-name: Minha Pipeline
+name: Pipeline DevOps HTML
 
 on:
   push:
@@ -6,15 +6,70 @@ on:
       - main
 
 jobs:
-  teste:
+
+  validacao:
+    name: Validação do Projeto
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar projeto
+      - name: Clonar repositório
         uses: actions/checkout@v4
 
-      - name: Mostrar arquivos
-        run: ls
+      - name: Mostrar estrutura do projeto
+        run: ls -la
 
-      - name: Mensagem
-        run: echo "Pipeline funcionando!"
+      - name: Verificar arquivos HTML
+        run: find . -name "*.html"
+
+      - name: Verificar README
+        run: |
+          if [ -f README.md ]; then
+            echo "README encontrado"
+          else
+            echo "README não encontrado"
+            exit 1
+          fi
+
+      - name: Simular Build
+        run: |
+          mkdir build
+          cp index.html build/
+          echo "Build criada com sucesso"
+
+      - name: Upload da Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: build/
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: validacao
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Criar pasta deploy
+        run: |
+          mkdir deploy
+          cp index.html deploy/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy/
+
+      - name: Deploy Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
